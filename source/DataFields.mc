@@ -568,7 +568,7 @@ class DataFields extends Ui.Drawable {
 
 					// Stored weather data available.
 					} else if ((weather != null) && (weather["temp"] != null)) {
-						temperature = weather["temp"];
+						temperature = Math.round(weather["temp"]);
 
 						value = temperature.format(INTEGER_FORMAT) + "°";
 						result["weatherIcon"] = weather["icon"];
