@@ -590,10 +590,9 @@ class DataFields extends Ui.Drawable {
 
 					// Stored weather data available.
 					} else if ((weather != null) && (weather["wind-speed"] != null)) {
-						var windSpeed = weather["wind-speed"];
-						var speed = Math.round(windSpeed);
+						var windSpeed = Math.round(weather["wind-speed"]);
 						
-						value = speed.format(INTEGER_FORMAT);
+						value = windSpeed.format(INTEGER_FORMAT);
 
 					// Awaiting response.
 					} else if (App.Storage.getValue("PendingWebRequests")["OpenWeatherMapCurrent"]) {
