@@ -190,4 +190,13 @@
 		</settingConfig>
 	</setting>
 
+	<setting propertyKey="@Properties.LogLevel" title="@Strings.LogLevelTitle">
+		<settingConfig type="list">
+			<listEntry value="0">@Strings.LogLevelNone</listEntry>
+			<listEntry value="1">@Strings.LogLevelInfo</listEntry>
+			<listEntry value="2">@Strings.LogLevelDebug</listEntry>
+			<listEntry value="3">@Strings.LogLevelTrace</listEntry>
+		</settingConfig>
+	</setting>
+
 </settings>

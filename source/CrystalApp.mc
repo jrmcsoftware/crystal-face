@@ -13,6 +13,7 @@ var gLocationLng = -360.0; // -360.0 is a special value, meaning "unitialised". 
 
 (:background)
 class CrystalApp extends App.AppBase {
+	var LOGGER = new Logger("CrystalApp");
 
 	var mView;
 
@@ -50,6 +51,7 @@ class CrystalApp extends App.AppBase {
 	// temporal event.
 	// Currently called on layout initialisation, when settings change, and on exiting sleep.
 	function checkPendingWebRequests() {
+		LOGGER.debug("checkPendingWebRequests()");
 
 		// Attempt to update current location, to be used by Sunrise/Sunset, and Weather.
 		// If current location available from current activity, save it in case it goes "stale" and can not longer be retrieved.
@@ -143,6 +145,8 @@ class CrystalApp extends App.AppBase {
 
 			var owmCurrent = App.Storage.getValue("OpenWeatherMapCurrent");
 
+			LOGGER.debug("request OWM data");
+			
 			// No existing data.
 			if (owmCurrent == null) {
 
@@ -165,11 +169,12 @@ class CrystalApp extends App.AppBase {
 			}
 		}
 
+		LOGGER.debug("pendingWebRequests: " + pendingWebRequests.keys().size());
 		// If there are any pending requests:
 		if (pendingWebRequests.keys().size() > 0) {
-
 			// Register for background temporal event as soon as possible.
 			var lastTime = Bg.getLastTemporalEventTime();
+			LOGGER.debug(lastTime);
 			if (lastTime) {
 				// Events scheduled for a time in the past trigger immediately.
 				var nextTime = lastTime.add(new Time.Duration(5 * 60));
@@ -191,9 +196,10 @@ class CrystalApp extends App.AppBase {
 	// data is Dictionary with single key that indicates the data type received. This corresponds with App.Storage and
 	// pendingWebRequests keys.
 	function onBackgroundData(data) {
+		LOGGER.debug("onBackgroundData(data)");
 		var pendingWebRequests = App.Storage.getValue("PendingWebRequests");
 		if (pendingWebRequests == null) {
-			//Sys.println("onBackgroundData() called with no pending web requests!");
+			LOGGER.debug("onBackgroundData() called with no pending web requests!");
 			pendingWebRequests = {};
 		}
 
@@ -204,6 +210,7 @@ class CrystalApp extends App.AppBase {
 		// No value in showing any HTTP error to the user, so no need to modify stored data.
 		// Leave pendingWebRequests flag set, and simply return early.
 		if (receivedData["httpError"]) {
+			LOGGER.debug("onBackgroundData() called with httpError");
 			return;
 		}
 

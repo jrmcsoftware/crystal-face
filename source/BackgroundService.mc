@@ -5,8 +5,11 @@ using Toybox.Application as App;
 
 (:background)
 class BackgroundService extends Sys.ServiceDelegate {
+	var LOGGER = new Logger("BackgroundService");
 	
 	function initialize() {
+		LOGGER.debug("BackgroundService.initialize()");
+	
 		Sys.ServiceDelegate.initialize();
 	}
 
@@ -14,7 +17,7 @@ class BackgroundService extends Sys.ServiceDelegate {
 	// This function determines priority of web requests, if multiple are pending.
 	// Pending web request flag will be cleared only once the background data has been successfully received.
 	function onTemporalEvent() {
-		//Sys.println("onTemporalEvent");
+		LOGGER.debug("BackgroundService.onTemporalEvent()");
 		var pendingWebRequests = App.Storage.getValue("PendingWebRequests");
 		if (pendingWebRequests != null) {
 
@@ -38,13 +41,15 @@ class BackgroundService extends Sys.ServiceDelegate {
 					units = "imperial";
 				}
 				
+				LOGGER.debug("make OWM web request");
+				
 				makeWebRequest(
 					"https://api.openweathermap.org/data/2.5/weather",
 					{
 						// Assume that any watch that can make web requests, also supports App.Storage.
 						"lat" => App.Storage.getValue("LastLocationLat"),
 						"lon" => App.Storage.getValue("LastLocationLng"),
-						"appid" => "d72271af214d870eb94fe8f9af450db4",
+						"appid" => "0e234f0b2c3878bf28d985ebab4d979e",
 						"units" => units
 					},
 					method(:onReceiveOpenWeatherMapCurrent)
@@ -153,6 +158,8 @@ class BackgroundService extends Sys.ServiceDelegate {
 	function onReceiveOpenWeatherMapCurrent(responseCode, data) {
 		var result;
 		
+		LOGGER.debug("onReceiveOpenWeatherMapCurrent");
+		
 		// Useful data only available if result was successful.
 		// Filter and flatten data response for data that we actually need.
 		// Reduces runtime memory spike in main app.
@@ -167,6 +174,8 @@ class BackgroundService extends Sys.ServiceDelegate {
 				"wind-speed" => data["wind"]["speed"],
 				"icon" => data["weather"][0]["icon"]
 			};
+			
+			LOGGER.debug("weather: " + result);
 
 		// HTTP error: do not save.
 		} else {

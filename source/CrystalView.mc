@@ -78,6 +78,8 @@ function drawBatteryMeter(dc, x, y, width, height) {
 }
 
 class CrystalView extends Ui.WatchFace {
+	var LOGGER = new Logger("CrystalView");
+
 	private var mIsSleeping = false;
 	private var mSettingsChangedSinceLastDraw = false; // Have settings changed since last full update?
 
@@ -169,6 +171,7 @@ class CrystalView extends Ui.WatchFace {
 	// the state of this View and prepare it to be shown. This includes
 	// loading resources into memory.
 	function onShow() {
+		LOGGER.debug("onShow()");
 	}
 
 	// Set flag to respond to settings change on next full draw (onUpdate()), as we may be in 1Hz (lower power) mode, and cannot
@@ -290,7 +293,7 @@ class CrystalView extends Ui.WatchFace {
 
 	// Update the view
 	function onUpdate(dc) {
-		//System.println("onUpdate()");
+		LOGGER.debug("onUpdate(dc)");
 
 		// Respond now to any settings change since last full draw, as we can now update the full screen.
 		if (mSettingsChangedSinceLastDraw) {
@@ -380,7 +383,7 @@ class CrystalView extends Ui.WatchFace {
 	// Set clipping region to previously-displayed seconds text only.
 	// Clear background, clear clipping region, then draw new seconds.
 	function onPartialUpdate(dc) {
-		//Sys.println("onPartialUpdate()");
+		LOGGER.trace("onPartialUpdate(dc)");
 	
 		mDataFields.update(dc, /* isPartialUpdate */ true);
 		mTime.drawSeconds(dc, /* isPartialUpdate */ true);

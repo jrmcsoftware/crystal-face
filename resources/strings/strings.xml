@@ -73,6 +73,12 @@
 	<string id="Humidity">Humidity</string>
 	<string id="WindSpeed">Wind Speed</string>
 	<string id="Pressure">Pressure</string>
+	
+	<string id="LogLevelTitle">Logging Level</string>
+	<string id="LogLevelNone">None</string>
+	<string id="LogLevelInfo">Info</string>
+	<string id="LogLevelDebug">Debug</string>
+	<string id="LogLevelTrace">Trace</string>
 
 	<!-- Internal use only. Required because fonts cannot be overridden by locale. Leave blank for no override. -->
 	<string id="DATE_FONT_OVERRIDE"></string>

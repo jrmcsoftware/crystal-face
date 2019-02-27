@@ -34,6 +34,7 @@ enum /* FIELD_TYPES */ {
 }
 
 class DataFields extends Ui.Drawable {
+	var LOGGER = new Logger("DataFields");
 
 	private var mLeft;
 	private var mRight;
