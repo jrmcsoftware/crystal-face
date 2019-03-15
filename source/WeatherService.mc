@@ -1,7 +1,8 @@
 using Toybox.System as Sys;
 using Toybox.Application as App;
 
-module WeatherService {
+(:background)
+class WeatherService {
 	function getUnits() {
 		var units;	
 		
@@ -139,7 +140,7 @@ module WeatherService {
 
 			// Stored weather data available.
 			} else if ((weather != null) && (weather["temp"] != null)) {
-				temperature = Math.round(weather["temp"]);
+				var temperature = Math.round(weather["temp"]);
 
 				value = temperature.format(INTEGER_FORMAT) + "°";
 			// Awaiting response.

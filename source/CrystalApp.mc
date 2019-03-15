@@ -15,6 +15,7 @@ var gLocationLng = -360.0; // -360.0 is a special value, meaning "unitialised". 
 class CrystalApp extends App.AppBase {
 
 	var mView;
+	var weather = new WeatherService();
 
 	function initialize() {
 		AppBase.initialize();		
@@ -96,7 +97,7 @@ class CrystalApp extends App.AppBase {
 				}
 			}
 		}
-		// Sys.println(gLocationLat + ", " + gLocationLng);
+		Sys.println(gLocationLat + ", " + gLocationLng);
 
 		if (!((Sys has :ServiceDelegate) && (App has :Storage))) {
 			return;
@@ -137,7 +138,7 @@ class CrystalApp extends App.AppBase {
 		// 2. Weather:
 		// Location must be available, weather data field must be shown.
 		if ((gLocationLat != -360.0) && 
-		     mView.hasWeatherDataField()) {
+		     mView.mDataFields.hasWeatherDataField()) {
 
 			var owmCurrent = App.Storage.getValue("OpenWeatherMapCurrent");
 
@@ -151,12 +152,13 @@ class CrystalApp extends App.AppBase {
 
 				// Existing data is older than 30 mins.
 				// TODO: Consider requesting weather at sunrise/sunset to update weather icon.
-				if (Weather.isWeatherDataStale() ||
+				if (weather.isWeatherDataStale() ||
 
 				// Existing data not for this location.
 				// Not a great test, as a degree of longitude varies betwee 69 (equator) and 0 (pole) miles, but simpler than
 				// true distance calculation. 0.02 degree of latitude is just over a mile.
-				Weather.isLocationDifferent(gLocationLat, gLocationLng)) {
+				weather.isLocationDifferent(gLocationLat, gLocationLng)) {
+					Sys.println("requesting weather data");
 					pendingWebRequests["OpenWeatherMapCurrent"] = true;
 				}
 			}

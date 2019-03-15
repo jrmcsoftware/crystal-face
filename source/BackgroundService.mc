@@ -2,10 +2,11 @@ using Toybox.Background as Bg;
 using Toybox.System as Sys;
 using Toybox.Communications as Comms;
 using Toybox.Application as App;
-using WeatherService as Weather;
 
 (:background)
 class BackgroundService extends Sys.ServiceDelegate {
+
+	var weather = new WeatherService();
 	
 	function initialize() {
 		Sys.ServiceDelegate.initialize();
@@ -15,8 +16,9 @@ class BackgroundService extends Sys.ServiceDelegate {
 	// This function determines priority of web requests, if multiple are pending.
 	// Pending web request flag will be cleared only once the background data has been successfully received.
 	function onTemporalEvent() {
-		//Sys.println("onTemporalEvent");
+		Sys.println("onTemporalEvent");
 		var pendingWebRequests = App.Storage.getValue("PendingWebRequests");
+		Sys.println("pendingWebRequests: " + pendingWebRequests);
 		if (pendingWebRequests != null) {
 
 			// 1. City local time.
@@ -32,15 +34,18 @@ class BackgroundService extends Sys.ServiceDelegate {
 			// 2. Weather.
 			} else if (pendingWebRequests["OpenWeatherMapCurrent"] != null) {
 			// Assume that any watch that can make web requests, also supports App.Storage.
+				Sys.println("about to request weather data");
 				makeWebRequest(
-					Weather.getWeatherUrl(),
-					Weather.getWeatherParams(),
+					weather.getWeatherUrl(),
+					weather.getWeatherParams(),
 					method(:onReceiveOpenWeatherMapCurrent)
 				);
 			}
 		} /* else {
 			Sys.println("onTemporalEvent() called with no pending web requests!");
 		} */
+		
+		Sys.println("end of onTemporalEvent()");
 	}
 
 	// Sample time zone data:
@@ -92,7 +97,7 @@ class BackgroundService extends Sys.ServiceDelegate {
 		// Filter and flatten data response for data that we actually need.
 		// Reduces runtime memory spike in main app.
 		if (responseCode == 200) {
-			result = Weather.parseWeatherData(data);
+			result = weather.parseWeatherData(data);
 		// HTTP error: do not save.
 		} else {
 			result = {
@@ -113,6 +118,10 @@ class BackgroundService extends Sys.ServiceDelegate {
 			:responseType => Comms.HTTP_RESPONSE_CONTENT_TYPE_JSON
 		};
 
+		Sys.println("makeWebRequest:");
+		Sys.println("\t" + url);
+		Sys.println("\t" + params);
+		
 		Comms.makeWebRequest(url, params, options, callback);
 	}
 }

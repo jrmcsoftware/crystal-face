@@ -10,8 +10,6 @@ using Toybox.Math as Math;
 using Toybox.Time;
 using Toybox.Time.Gregorian;
 
-using WeatherService as Weather;
-
 enum /* FIELD_TYPES */ {
 	// Pseudo-fields.	
 	FIELD_TYPE_SUNRISE = -1,	
@@ -36,6 +34,8 @@ enum /* FIELD_TYPES */ {
 }
 
 class DataFields extends Ui.Drawable {
+
+	var weather = new WeatherService();
 
 	private var mLeft;
 	private var mRight;
@@ -221,7 +221,7 @@ class DataFields extends Ui.Drawable {
 		
 		
 		if (isWeatherDataField(fieldType)) {
-			if (Weather.isWeatherDataStale()) {
+			if (weather.isWeatherDataStale()) {
 				colour = gMeterBackgroundColour;
 			}
 		}
@@ -576,18 +576,18 @@ class DataFields extends Ui.Drawable {
 				break;
 
 			case FIELD_TYPE_WEATHER:
-				result["weatherIcon"] = Weather.getWeatherIcon();
-				value = Weather.getWeatherTemperature();
+				result["weatherIcon"] = weather.getWeatherIcon();
+				value = weather.getWeatherTemperature();
 
 				break;
 				
 			case FIELD_TYPE_WIND_SPEED:
-				value = Weather.getWindSpeed();
+				value = weather.getWindSpeed();
 				
 				break;
 				
 			case FIELD_TYPE_HUMIDITY:
-				result = Weather.getHumidity();
+				result = weather.getHumidity();
 				
 				break;
 
