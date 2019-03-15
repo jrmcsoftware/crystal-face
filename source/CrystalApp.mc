@@ -3,6 +3,8 @@ using Toybox.Background as Bg;
 using Toybox.System as Sys;
 using Toybox.WatchUi as Ui;
 using Toybox.Time;
+using Toybox.Position;
+
 
 // In-memory current location.
 // Important for CIQ 1.x watches that only support Object Store, where stored location is overwritten with default when user
@@ -53,9 +55,18 @@ class CrystalApp extends App.AppBase {
 
 		// Attempt to update current location, to be used by Sunrise/Sunset, and Weather.
 		// If current location available from current activity, save it in case it goes "stale" and can not longer be retrieved.
-		var location = Activity.getActivityInfo().currentLocation;
+		//var location = Activity.getActivityInfo().currentLocation;
+		
+		var location = new Position.Location(
+		    {
+		        :latitude => 36.6354037,
+		        :longitude => -93.2841702,
+		        :format => :degrees
+		    }
+		);
+		
 		if (location) {
-			// Sys.println("Saving location");
+			Sys.println("Saving location");
 			location = location.toDegrees(); // Array of Doubles.
 			gLocationLat = location[0].toFloat();
 			gLocationLng = location[1].toFloat();
@@ -96,7 +107,7 @@ class CrystalApp extends App.AppBase {
 				}
 			}
 		}
-		// Sys.println(gLocationLat + ", " + gLocationLng);
+		Sys.println(gLocationLat + ", " + gLocationLng);
 
 		if (!((Sys has :ServiceDelegate) && (App has :Storage))) {
 			return;
@@ -140,7 +151,7 @@ class CrystalApp extends App.AppBase {
 		     (mView.mDataFields.hasField(FIELD_TYPE_WEATHER) ||
 		      mView.mDataFields.hasField(FIELD_TYPE_HUMIDITY) ||
 		      mView.mDataFields.hasField(FIELD_TYPE_WIND_SPEED))) {
-
+			Sys.println("hasWeatherField");
 			var owmCurrent = App.Storage.getValue("OpenWeatherMapCurrent");
 
 			// No existing data.
@@ -150,7 +161,7 @@ class CrystalApp extends App.AppBase {
 
 			// Successfully received weather data.
 			} else if (owmCurrent["cod"] == 200) {
-
+				
 				// Existing data is older than 30 mins.
 				// TODO: Consider requesting weather at sunrise/sunset to update weather icon.
 				if ((Time.now().value() > (owmCurrent["dt"] + 1800)) ||
@@ -159,7 +170,7 @@ class CrystalApp extends App.AppBase {
 				// Not a great test, as a degree of longitude varies betwee 69 (equator) and 0 (pole) miles, but simpler than
 				// true distance calculation. 0.02 degree of latitude is just over a mile.
 				(((gLocationLat - owmCurrent["lat"]).abs() > 0.02) || ((gLocationLng - owmCurrent["lon"]).abs() > 0.02))) {
-
+					Sys.println("requesting weather data");
 					pendingWebRequests["OpenWeatherMapCurrent"] = true;
 				}
 			}

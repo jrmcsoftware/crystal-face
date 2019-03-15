@@ -5,6 +5,8 @@ using Toybox.Application as App;
 
 (:background)
 class BackgroundService extends Sys.ServiceDelegate {
+
+	var weather = new WeatherService();
 	
 	function initialize() {
 		Sys.ServiceDelegate.initialize();
@@ -14,8 +16,9 @@ class BackgroundService extends Sys.ServiceDelegate {
 	// This function determines priority of web requests, if multiple are pending.
 	// Pending web request flag will be cleared only once the background data has been successfully received.
 	function onTemporalEvent() {
-		//Sys.println("onTemporalEvent");
+		Sys.println("onTemporalEvent");
 		var pendingWebRequests = App.Storage.getValue("PendingWebRequests");
+		Sys.println("pendingWebRequests: " + pendingWebRequests);
 		if (pendingWebRequests != null) {
 
 			// 1. City local time.
@@ -38,21 +41,18 @@ class BackgroundService extends Sys.ServiceDelegate {
 					units = "imperial";
 				}
 				
+				Sys.println("about to request weather data");
 				makeWebRequest(
 					"https://api.openweathermap.org/data/2.5/weather",
-					{
-						// Assume that any watch that can make web requests, also supports App.Storage.
-						"lat" => App.Storage.getValue("LastLocationLat"),
-						"lon" => App.Storage.getValue("LastLocationLng"),
-						"appid" => "d72271af214d870eb94fe8f9af450db4",
-						"units" => units
-					},
+					weather.getWeatherParams(),
 					method(:onReceiveOpenWeatherMapCurrent)
 				);
 			}
 		} /* else {
 			Sys.println("onTemporalEvent() called with no pending web requests!");
 		} */
+		
+		Sys.println("end of onTemporalEvent()");
 	}
 
 	// Sample time zone data:
@@ -187,7 +187,10 @@ class BackgroundService extends Sys.ServiceDelegate {
 					"Content-Type" => Communications.REQUEST_CONTENT_TYPE_URL_ENCODED},
 			:responseType => Comms.HTTP_RESPONSE_CONTENT_TYPE_JSON
 		};
-
+		Sys.println("makeWebRequest:");
+		Sys.println("\t" + url);
+		Sys.println("\t" + params);
+		
 		Comms.makeWebRequest(url, params, options, callback);
 	}
 }
