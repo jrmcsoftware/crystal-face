@@ -1,5 +1,7 @@
 using Toybox.System as Sys;
 using Toybox.Application as App;
+using Toybox.Time;
+using Toybox.Math;
 
 (:background)
 class WeatherService {
