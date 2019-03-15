@@ -137,9 +137,7 @@ class CrystalApp extends App.AppBase {
 		// 2. Weather:
 		// Location must be available, weather data field must be shown.
 		if ((gLocationLat != -360.0) && 
-		     (mView.mDataFields.hasField(FIELD_TYPE_WEATHER) ||
-		      mView.mDataFields.hasField(FIELD_TYPE_HUMIDITY) ||
-		      mView.mDataFields.hasField(FIELD_TYPE_WIND_SPEED))) {
+		     mView.hasWeatherDataField()) {
 
 			var owmCurrent = App.Storage.getValue("OpenWeatherMapCurrent");
 
@@ -153,13 +151,12 @@ class CrystalApp extends App.AppBase {
 
 				// Existing data is older than 30 mins.
 				// TODO: Consider requesting weather at sunrise/sunset to update weather icon.
-				if ((Time.now().value() > (owmCurrent["dt"] + 1800)) ||
+				if (Weather.isWeatherDataStale() ||
 
 				// Existing data not for this location.
 				// Not a great test, as a degree of longitude varies betwee 69 (equator) and 0 (pole) miles, but simpler than
 				// true distance calculation. 0.02 degree of latitude is just over a mile.
-				(((gLocationLat - owmCurrent["lat"]).abs() > 0.02) || ((gLocationLng - owmCurrent["lon"]).abs() > 0.02))) {
-
+				Weather.isLocationDifferent(gLocationLat, gLocationLng)) {
 					pendingWebRequests["OpenWeatherMapCurrent"] = true;
 				}
 			}

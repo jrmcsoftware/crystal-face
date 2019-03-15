@@ -10,6 +10,8 @@ using Toybox.Math as Math;
 using Toybox.Time;
 using Toybox.Time.Gregorian;
 
+using WeatherService as Weather;
+
 enum /* FIELD_TYPES */ {
 	// Pseudo-fields.	
 	FIELD_TYPE_SUNRISE = -1,	
@@ -98,6 +100,18 @@ class DataFields extends Ui.Drawable {
 		return ((mFieldTypes[0] == fieldType) ||
 			(mFieldTypes[1] == fieldType) ||
 			(mFieldTypes[2] == fieldType));
+	}
+	
+	function hasWeatherDataField() {
+		return (hasField(FIELD_TYPE_WEATHER) ||
+		      	hasField(FIELD_TYPE_HUMIDITY) ||
+		      	hasField(FIELD_TYPE_WIND_SPEED));
+	}
+	
+	function isWeatherDataField(fieldType) {
+		return fieldType == FIELD_TYPE_WEATHER ||
+				fieldType == FIELD_TYPE_HUMIDITY ||
+				fieldType == FIELD_TYPE_WIND_SPEED;
 	}
 
 	function draw(dc) {
@@ -203,6 +217,13 @@ class DataFields extends Ui.Drawable {
 			colour = gMeterBackgroundColour;
 		} else {
 			colour = gThemeColour;
+		}
+		
+		
+		if (isWeatherDataField(fieldType)) {
+			if (Weather.isWeatherDataStale()) {
+				colour = gMeterBackgroundColour;
+			}
 		}
 
 		// Battery.
@@ -555,72 +576,19 @@ class DataFields extends Ui.Drawable {
 				break;
 
 			case FIELD_TYPE_WEATHER:
+				result["weatherIcon"] = Weather.getWeatherIcon();
+				value = Weather.getWeatherTemperature();
 
-				// Default = sunshine!
-				result["weatherIcon"] = "01d";
-
-				if (App has :Storage) {
-					var weather = App.Storage.getValue("OpenWeatherMapCurrent");
-
-					// Awaiting location.
-					if (gLocationLat == -360.0) { // -360.0 is a special value, meaning "unitialised". Can't have null float property.
-						value = "gps?";
-
-					// Stored weather data available.
-					} else if ((weather != null) && (weather["temp"] != null)) {
-						temperature = Math.round(weather["temp"]);
-
-						value = temperature.format(INTEGER_FORMAT) + "°";
-						result["weatherIcon"] = weather["icon"];
-
-					// Awaiting response.
-					} else if (App.Storage.getValue("PendingWebRequests")["OpenWeatherMapCurrent"]) {
-						value = "...";
-					}
-				}
 				break;
+				
 			case FIELD_TYPE_WIND_SPEED:
-
-				if (App has :Storage) {
-					var weather = App.Storage.getValue("OpenWeatherMapCurrent");
-
-					// Awaiting location.
-					if (gLocationLat == -360.0) { // -360.0 is a special value, meaning "unitialised". Can't have null float property.
-						value = "gps?";
-
-					// Stored weather data available.
-					} else if ((weather != null) && (weather["wind-speed"] != null)) {
-						var windSpeed = Math.round(weather["wind-speed"]);
-						
-						value = windSpeed.format(INTEGER_FORMAT);
-
-					// Awaiting response.
-					} else if (App.Storage.getValue("PendingWebRequests")["OpenWeatherMapCurrent"]) {
-						value = "...";
-					}
-				}
+				value = Weather.getWindSpeed();
+				
 				break;
-
+				
 			case FIELD_TYPE_HUMIDITY:
-
-				if (App has :Storage) {
-					var weather = App.Storage.getValue("OpenWeatherMapCurrent");
-
-					// Awaiting location.
-					if (gLocationLat == -360.0) { // -360.0 is a special value, meaning "unitialised". Can't have null float property.
-						value = "gps?";
-
-					// Stored weather data available.
-					} else if ((weather != null) && (weather["humidity"] != null)) {
-						humidity = weather["humidity"];
-
-						value = humidity.format(INTEGER_FORMAT) + "%";
-
-					// Awaiting response.
-					} else if (App.Storage.getValue("PendingWebRequests")["OpenWeatherMapCurrent"]) {
-						value = "...";
-					}
-				}
+				result = Weather.getHumidity();
+				
 				break;
 
 			case FIELD_TYPE_PRESSURE:
