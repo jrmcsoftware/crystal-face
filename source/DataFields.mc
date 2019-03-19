@@ -10,6 +10,8 @@ using Toybox.Math as Math;
 using Toybox.Time;
 using Toybox.Time.Gregorian;
 
+using Weather;
+
 enum /* FIELD_TYPES */ {
 	// Pseudo-fields.	
 	FIELD_TYPE_SUNRISE = -1,	
@@ -34,8 +36,6 @@ enum /* FIELD_TYPES */ {
 }
 
 class DataFields extends Ui.Drawable {
-
-	var weather = new WeatherService();
 
 	private var mLeft;
 	private var mRight;
@@ -219,9 +219,8 @@ class DataFields extends Ui.Drawable {
 			colour = gThemeColour;
 		}
 		
-		
 		if (isWeatherDataField(fieldType)) {
-			if (weather.isWeatherDataStale()) {
+			if (Weather.isWeatherDataStale()) {
 				colour = gMeterBackgroundColour;
 			}
 		}
@@ -444,7 +443,7 @@ class DataFields extends Ui.Drawable {
 				activityInfo = ActivityMonitor.getInfo();
 				value = activityInfo.distance.toFloat() / /* CM_PER_KM */ 100000; // #11: Ensure floating point division!
 
-				if (settings.distanceUnits == System.UNIT_METRIC) {
+				if (settings.distanceUnits == Sys.UNIT_METRIC) {
 					unit = "km";					
 				} else {
 					value *= /* MI_PER_KM */ 0.621371;
@@ -482,7 +481,7 @@ class DataFields extends Ui.Drawable {
 				if (altitude != null) {
 
 					// Metres (no conversion necessary).
-					if (settings.elevationUnits == System.UNIT_METRIC) {
+					if (settings.elevationUnits == Sys.UNIT_METRIC) {
 						unit = "m";
 
 					// Feet.
@@ -506,7 +505,7 @@ class DataFields extends Ui.Drawable {
 					if ((sample != null) && (sample.data != null)) {
 						temperature = sample.data;
 
-						if (settings.temperatureUnits == System.UNIT_STATUTE) {
+						if (settings.temperatureUnits == Sys.UNIT_STATUTE) {
 							temperature = (temperature * (9.0 / 5)) + 32; // Convert to Farenheit: ensure floating point division.
 						}
 
@@ -576,18 +575,18 @@ class DataFields extends Ui.Drawable {
 				break;
 
 			case FIELD_TYPE_WEATHER:
-				result["weatherIcon"] = weather.getWeatherIcon();
-				value = weather.getWeatherTemperature();
+				result["weatherIcon"] = Weather.getWeatherIcon();
+				value = Weather.getWeatherTemperature();
 
 				break;
 				
 			case FIELD_TYPE_WIND_SPEED:
-				value = weather.getWindSpeed();
+				value = Weather.getWindSpeed();
 				
 				break;
 				
 			case FIELD_TYPE_HUMIDITY:
-				result = weather.getHumidity();
+				value = Weather.getHumidity();
 				
 				break;
 
@@ -621,6 +620,7 @@ class DataFields extends Ui.Drawable {
 		}
 
 		result["value"] = value;
+		Sys.println("result: " + result);
 		return result;
 	}
 }

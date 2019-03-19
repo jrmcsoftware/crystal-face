@@ -3,11 +3,10 @@ using Toybox.System as Sys;
 using Toybox.Communications as Comms;
 using Toybox.Application as App;
 
-(:background)
-class BackgroundService extends Sys.ServiceDelegate {
+using Weather;
 
-	var weather = new WeatherService();
-	
+(:background)
+class BackgroundService extends Sys.ServiceDelegate {	
 	function initialize() {
 		Sys.ServiceDelegate.initialize();
 	}
@@ -36,8 +35,8 @@ class BackgroundService extends Sys.ServiceDelegate {
 			// Assume that any watch that can make web requests, also supports App.Storage.
 				Sys.println("about to request weather data");
 				makeWebRequest(
-					weather.getWeatherUrl(),
-					weather.getWeatherParams(),
+					Weather.getWeatherUrl(),
+					Weather.getWeatherParams(),
 					method(:onReceiveOpenWeatherMapCurrent)
 				);
 			}
@@ -97,7 +96,7 @@ class BackgroundService extends Sys.ServiceDelegate {
 		// Filter and flatten data response for data that we actually need.
 		// Reduces runtime memory spike in main app.
 		if (responseCode == 200) {
-			result = weather.parseWeatherData(data);
+			result = Weather.parseWeatherData(data);
 		// HTTP error: do not save.
 		} else {
 			result = {

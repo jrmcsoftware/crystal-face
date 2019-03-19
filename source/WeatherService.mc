@@ -4,11 +4,17 @@ using Toybox.Time;
 using Toybox.Math;
 
 (:background)
-class WeatherService {
+module Weather {
+
+	var temperatureFormatter = new TemperatureFieldFormatter();
+	var weatherIconFormatter = new WeatherIconFormatter();
+	var humidityFormatter = new HumidityFieldFormatter();
+	var windSpeedFormatter = new WindSpeedFieldFormatter();
+
 	function getUnits() {
 		var units;	
 		
-		if (Sys.getDeviceSettings().temperatureUnits == System.UNIT_METRIC) {
+		if (Sys.getDeviceSettings().temperatureUnits == Sys.UNIT_METRIC) {
 			units = "metric";
 		} else {
 			units = "imperial";
@@ -47,8 +53,12 @@ class WeatherService {
 		};
 	}
 	
+	function getWeatherData() {
+		return App.Storage.getValue("OpenWeatherMapCurrent");
+	}
+	
 	function isWeatherDataStale() {
-		var weather = App.Storage.getValue("OpenWeatherMapCurrent");
+		var weather = getWeatherData();
 		
 		return ((weather == null) || 
 				(weather["dt"] == null) ||
@@ -56,102 +66,26 @@ class WeatherService {
 	}
 	
 	function isLocationDifferent(locationLat, locationLng) {
-		var owmCurrent = App.Storage.getValue("OpenWeatherMapCurrent");
+		var owmCurrent = getWeatherData();
 		
 		return ((locationLat - owmCurrent["lat"]).abs() > 0.02) || ((locationLng - owmCurrent["lon"]).abs() > 0.02);
 	}
 	
+	
 	function getHumidity() {
-		var value = "";
-		
-		if (App has :Storage) {
-			var weather = App.Storage.getValue("OpenWeatherMapCurrent");
-	
-			// Awaiting location.
-			if (gLocationLat == -360.0) { // -360.0 is a special value, meaning "unitialised". Can't have null float property.
-				value = "gps?";
-	
-			// Stored weather data available.
-			} else if ((weather != null) && (weather["humidity"] != null)) {
-				var humidity = weather["humidity"];
-	
-				value = humidity.format(INTEGER_FORMAT) + "%";
-	
-			// Awaiting response.
-			} else if (App.Storage.getValue("PendingWebRequests")["OpenWeatherMapCurrent"]) {
-				value = "...";
-			}
-		}
-		
-		return value;
+		return humidityFormatter.getValue();
 	}
 	
 	function getWindSpeed() {
-		var value = "";
-		
-		if (App has :Storage) {
-			var weather = App.Storage.getValue("OpenWeatherMapCurrent");
-
-			// Awaiting location.
-			if (gLocationLat == -360.0) { // -360.0 is a special value, meaning "unitialised". Can't have null float property.
-				value = "gps?";
-
-			// Stored weather data available.
-			} else if ((weather != null) && (weather["wind-speed"] != null)) {
-				var windSpeed = Math.round(weather["wind-speed"]);
-				
-				value = windSpeed.format(INTEGER_FORMAT);
-
-			// Awaiting response.
-			} else if (App.Storage.getValue("PendingWebRequests")["OpenWeatherMapCurrent"]) {
-				value = "...";
-			}
-		}
-		
-		return value;
+		return windSpeedFormatter.getValue();
 	}
 	
-	function getWeatherIcon () {	
-		// Default = sunshine!
-		var value = "01d";
-
-		if (App has :Storage) {
-			var weather = App.Storage.getValue("OpenWeatherMapCurrent");
-
-			// Awaiting location.
-			if (gLocationLat == -360.0) { // -360.0 is a special value, meaning "unitialised". Can't have null float property.
-
-			// Stored weather data available.
-			} else if ((weather != null) && (weather["icon"] != null)) {
-				value = weather["icon"];
-			}
-		}
-		
-		return value;
+	function getWeatherIcon () {
+		return weatherIconFormatter.getValue();
 	}
 	
 	function getWeatherTemperature () {
-		var value = "";
-		
-		if (App has :Storage) {
-			var weather = App.Storage.getValue("OpenWeatherMapCurrent");
-
-			// Awaiting location.
-			if (gLocationLat == -360.0) { // -360.0 is a special value, meaning "unitialised". Can't have null float property.
-				value = "gps?";
-
-			// Stored weather data available.
-			} else if ((weather != null) && (weather["temp"] != null)) {
-				var temperature = Math.round(weather["temp"]);
-
-				value = temperature.format(INTEGER_FORMAT) + "°";
-			// Awaiting response.
-			} else if (App.Storage.getValue("PendingWebRequests")["OpenWeatherMapCurrent"]) {
-				value = "...";
-			}
-		}
-		
-		return value;
+		return temperatureFormatter.getValue();
 	}
 
 	// Sample invalid API key:
@@ -206,5 +140,119 @@ class WeatherService {
 		"name":"Hemel Hempstead",
 		"cod":200
 	}
-	*/		
+	*/
+
+	class AbstractWeatherFieldFormatter {
+	
+		function getDefaultValue() {
+			return "";
+		}
+	
+		function getFieldName() {
+			return "";
+		}
+		
+		function getNoGpsValue() {
+			return "gps?";
+		}
+		
+		function getPendingRequestValue() {
+			return "...";
+		}
+	
+		function formatField(value) {
+			return value;
+		}
+	
+		function getValue() {
+			var value = getDefaultValue();
+			
+			if (App has :Storage) {
+				var weather = App.Storage.getValue("OpenWeatherMapCurrent");
+	
+				// Awaiting location.
+				if (gLocationLat == -360.0) { // -360.0 is a special value, meaning "unitialised". Can't have null float property.
+					value = getNoGpsValue();
+				// Stored weather data available.
+				} else if ((weather != null) && (weather[getFieldName()] != null)) {
+					value = formatField(weather[getFieldName()]);
+				// Awaiting response.
+				} else if (App.Storage.getValue("PendingWebRequests")["OpenWeatherMapCurrent"]) {
+					value = getPendingRequestValue();
+				}
+			}
+			
+			return value;
+		}
+	}
+
+	class HumidityFieldFormatter extends AbstractWeatherFieldFormatter {
+	
+		function initialize() {
+			AbstractWeatherFieldFormatter.initialize();
+		}
+	
+		function getFieldName() {
+			return "humidity";
+		}
+		
+		function formatField(value) {
+			return value.format(INTEGER_FORMAT) + "%";
+		}
+	}
+	
+	class TemperatureFieldFormatter extends AbstractWeatherFieldFormatter {
+	
+		function initialize() {
+			AbstractWeatherFieldFormatter.initialize();
+		}
+	
+		function getFieldName() {
+			return "temp";
+		}
+		
+		function formatField(value) {
+			return Math.round(value).format(INTEGER_FORMAT) + "°";
+		}
+	}
+	
+	class WeatherIconFormatter extends AbstractWeatherFieldFormatter {
+	
+		function initialize() {
+			AbstractWeatherFieldFormatter.initialize();
+		}
+	
+		function getFieldName() {
+			return "icon";
+		}
+		
+		// Default = sunshine!
+		function getDefaultValue() {
+			return "01d";
+		}
+		
+		function getNoGpsValue() {
+			return "01d";
+		}
+		
+		function getPendingRequestValue() {
+			return "01d";
+		}
+	}
+	
+	class WindSpeedFieldFormatter extends AbstractWeatherFieldFormatter {
+	
+		function initialize() {
+			AbstractWeatherFieldFormatter.initialize();
+		}
+	
+		function getFieldName() {
+			return "wind-speed";
+		}
+		
+		function formatField(value) {
+			return Math.round(value).format(INTEGER_FORMAT);
+		}
+	}
 }
+

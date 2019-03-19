@@ -4,6 +4,8 @@ using Toybox.System as Sys;
 using Toybox.WatchUi as Ui;
 using Toybox.Time;
 
+using Weather;
+
 // In-memory current location.
 // Important for CIQ 1.x watches that only support Object Store, where stored location is overwritten with default when user
 // changes any setting (this happens for any properties that do not have corresponding setting). Object Store is still useful for
@@ -15,7 +17,6 @@ var gLocationLng = -360.0; // -360.0 is a special value, meaning "unitialised". 
 class CrystalApp extends App.AppBase {
 
 	var mView;
-	var weather = new WeatherService();
 
 	function initialize() {
 		AppBase.initialize();		
@@ -149,15 +150,15 @@ class CrystalApp extends App.AppBase {
 
 			// Successfully received weather data.
 			} else if (owmCurrent["cod"] == 200) {
-
+				
 				// Existing data is older than 30 mins.
 				// TODO: Consider requesting weather at sunrise/sunset to update weather icon.
-				if (weather.isWeatherDataStale() ||
+				if (Weather.isWeatherDataStale() ||
 
 				// Existing data not for this location.
 				// Not a great test, as a degree of longitude varies betwee 69 (equator) and 0 (pole) miles, but simpler than
 				// true distance calculation. 0.02 degree of latitude is just over a mile.
-				weather.isLocationDifferent(gLocationLat, gLocationLng)) {
+				Weather.isLocationDifferent(gLocationLat, gLocationLng)) {
 					Sys.println("requesting weather data");
 					pendingWebRequests["OpenWeatherMapCurrent"] = true;
 				}
