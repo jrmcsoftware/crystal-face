@@ -219,6 +219,7 @@ class DataFields extends Ui.Drawable {
 			colour = gThemeColour;
 		}
 		
+		// grey out weather data fields if the data is stale.
 		if (isWeatherDataField(fieldType)) {
 			if (Weather.isWeatherDataStale()) {
 				colour = gMeterBackgroundColour;

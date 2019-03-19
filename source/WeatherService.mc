@@ -60,7 +60,8 @@ module Weather {
 	function isWeatherDataStale() {
 		var weather = getWeatherData();
 		
-		return ((weather == null) || 
+		return ( !(App has :Storage) ||
+				(weather == null) || 
 				(weather["dt"] == null) ||
 				(Time.now().value() > (weather["dt"] + 1800)));
 	}
